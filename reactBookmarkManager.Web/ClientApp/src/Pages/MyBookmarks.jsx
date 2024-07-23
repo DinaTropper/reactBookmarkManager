@@ -7,10 +7,14 @@ import BookmarkRow from '../components/BookmarkRow.jsx';
 
 const MyBookmarks = () => {
 
-    const [bookmarks, setBookmarks] = useState([]);
+    const [bookmarks, setBookmarks] = useState([{
+        title: '',
+        url: '',
+        isEditClicked:false
+    }]);
     const [isLoading, setIsLoading] = useState(true);
     const [titleNew, setTitleNew] = useState();
-    const [isEditClicked, setIsEditClicked] = useState(false);
+    //const [isEditClicked, setIsEditClicked] = useState(false);
     const { user } = useAuth();
 
     const { title, url } = bookmarks;
@@ -18,7 +22,6 @@ const MyBookmarks = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        setIsLoading(true);
         getBookmarks();
         setIsLoading(false);
     }, []);
@@ -29,10 +32,13 @@ const MyBookmarks = () => {
     }
 
     const onEditClick = (id) => {
-        console.log(bookmarks);
-        setIsEditClicked(!isEditClicked);
-        const bookmark = bookmarks.find(b => b.id === id);
-        setTitleNew(bookmark.title);
+       
+        const nextState = produce(bookmarks, draftBookmarks => {
+            const bookmark = draftBookmarks.find(b => b.id === id);
+            bookmark.isEditClicked = true;
+            setTitleNew(bookmark.title);
+        });
+        setBookmarks(nextState);
 
     }
     const onTextChange = (e, id) => {
@@ -46,25 +52,27 @@ const MyBookmarks = () => {
 
     const onUpdateClick = async (title, id) => {
         await axios.post('/api/bookmarks/updatebookmark', { title, id });
-        getBookmarks();
-        setIsEditClicked(false);
-        navigate('/mybookmarks');
+        const nextState = produce(bookmarks, draftBookmarks => {
+            const bookmark = draftBookmarks.find(b => b.id === id);
+            bookmark.isEditClicked = false;
+        });
+        await getBookmarks();
     }
 
     const onCancelClick = (id) => {
         const nextState = produce(bookmarks, draftBookmarks => {
             const bookmark = draftBookmarks.find(b => b.id === id);
             bookmark.title = titleNew;
+            bookmark.isEditClicked = false;
         });
         setBookmarks(nextState);
-        setIsEditClicked(!isEditClicked)
+       
     }
 
     const onDeleteClick = async (id) => {
         console.log("i just pressed delete")
         await axios.post(`/api/bookmarks/deletebookmark?id=${id}`);
-        getBookmarks();
-        navigate('/mybookmarks');
+        await getBookmarks();
     }
 
     return (
@@ -93,7 +101,7 @@ const MyBookmarks = () => {
                                         key={b.id}
                                         bookmark={b}
                                         onTextChange={e => onTextChange(e, b.id)}
-                                        isEditClicked={isEditClicked}
+                                        isEditClicked={b.isEditClicked}
                                         onEditClick={() => onEditClick(b.id)}
                                         onUpdateClick={() => onUpdateClick(b.title, b.id)}
                                         onCancelClick={() => onCancelClick(b.id)}
