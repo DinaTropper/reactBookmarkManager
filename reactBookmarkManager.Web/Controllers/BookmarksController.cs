@@ -8,6 +8,7 @@ namespace reactBookmarkManager.Web.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class BookmarksController : ControllerBase
     {
         private readonly string _connectionString;
@@ -18,7 +19,6 @@ namespace reactBookmarkManager.Web.Controllers
         }
 
         [HttpPost("addbookmark")]
-        [Authorize]
         public void AddBookmark(Bookmark b)
         {
             var repo = new BookmarksRepo(_connectionString);
@@ -27,6 +27,7 @@ namespace reactBookmarkManager.Web.Controllers
             repo.AddBookmark(b);
 
         }
+
         [AllowAnonymous]
         [HttpGet]
         [Route("gettopfive")]

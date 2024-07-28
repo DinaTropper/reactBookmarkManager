@@ -22,14 +22,15 @@ const MyBookmarks = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+       const getBookmarks = async () => {
+        const { data } = await axios.get('/api/bookmarks/getmine');
+        setBookmarks(data);
+        }
         getBookmarks();
         setIsLoading(false);
     }, []);
 
-    const getBookmarks = async () => {
-        const { data } = await axios.get('/api/bookmarks/getmine');
-        setBookmarks(data);
-    }
+    
 
     const onEditClick = (id) => {
        
